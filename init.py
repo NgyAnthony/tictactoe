@@ -1,11 +1,80 @@
 import random
+from tkinter import *
+
+
+class App:
+    def __init__(self, master, game):
+        self.game = game
+        self.winner_status = False
+        frame = Frame(master=master, width=640, height=400)
+        frame.pack()
+
+        self.button0_0 = Button(frame, width=20, height=5, text=" ", command=lambda: self.modify_button(self.button0_0))
+        self.button0_1 = Button(frame, width=20, height=5, text=" ", command=lambda: self.modify_button(self.button0_1))
+        self.button0_2 = Button(frame, width=20, height=5, text=" ", command=lambda: self.modify_button(self.button0_2))
+
+        self.button1_0 = Button(frame, width=20, height=5, text=" ", command=lambda: self.modify_button(self.button1_0))
+        self.button1_1 = Button(frame, width=20, height=5, text=" ", command=lambda: self.modify_button(self.button1_1))
+        self.button1_2 = Button(frame, width=20, height=5, text=" ", command=lambda: self.modify_button(self.button1_2))
+
+        self.button2_0 = Button(frame, width=20, height=5, text=" ", command=lambda: self.modify_button(self.button2_0))
+        self.button2_1 = Button(frame, width=20, height=5, text=" ", command=lambda: self.modify_button(self.button2_1))
+        self.button2_2 = Button(frame, width=20, height=5, text=" ", command=lambda: self.modify_button(self.button2_2))
+
+        self.label = Label(master, text="Welcome to Tic-Tac-Toe")
+        self.button_reset = Button(master, text="Reset")
+        self.button_quit = Button(master, text="Quit", command=frame.quit)
+
+        self.button0_0.grid(row=0, column=0, sticky=NW, pady=2)
+        self.button0_1.grid(row=0, column=1, sticky=N, pady=2)
+        self.button0_2.grid(row=0, column=2, sticky=NE, pady=2)
+
+        self.button1_0.grid(row=1, column=0, sticky=W, pady=2)
+        self.button1_1.grid(row=1, column=1, pady=2)
+        self.button1_2.grid(row=1, column=2, sticky=E, pady=2)
+
+        self.button2_0.grid(row=2, column=0, sticky=SW, pady=2)
+        self.button2_1.grid(row=2, column=1, sticky=S, pady=2)
+        self.button2_2.grid(row=2, column=2, sticky=SE, pady=2)
+
+        self.label.pack()
+        self.button_reset.pack()
+        self.button_quit.pack()
+
+    def modify_button(self, button):
+        if button['text'] == " ":
+            button.config(text=self.game.current_player)
+            info = button.grid_info()
+            game.set_token(int(info['row']), int(info['column']), self.game.current_player)
+            winner = game.check_winner()
+            game.show_winner(self.label, winner)
+            if len(winner) != 0:
+                self.winner_status = True
+
+            if self.winner_status is False:
+                if self.game.current_player == self.game.player1:
+                    self.game.current_player = self.game.player2
+                    self.label.config(text="It's now {}'s turn.".format(self.game.player2))
+                elif self.game.current_player == self.game.player2:
+                    self.game.current_player = self.game.player1
+                    self.label.config(text="It's now {}'s turn.".format(self.game.player1))
+        else:
+            self.label.config(text="Case already used !")
 
 
 class Board:
     def __init__(self):
-        self.matrix = [["o", None, None],
-                       [None, "o", None],
-                       [None, None, "o"]]
+        self.matrix = [[None, None, None],
+                       [None, None, None],
+                       [None, None, None]]
+
+    def set_token(self, row, col, player):
+        self.matrix[row][col] = player
+
+    def wipe_board(self):
+        self.matrix = [[None, None, None],
+                       [None, None, None],
+                       [None, None, None]]
 
 
 class LogicHandler(Board):
@@ -42,20 +111,20 @@ class LogicHandler(Board):
         h = self.check_horizontal()
         c = self.check_cross()
         winner = list(filter(None, [v, h, c]))
+        return winner
 
-        try:
-            print('The "{}" player won !'.format(winner[0]))
-        except:
-            pass
+    def show_winner(self, label, winner):
+        if len(winner) == 1:
+            label.config(text='The "{}" player won !'.format(winner[0]))
 
 
-a = LogicHandler()
-a.check_winner()
-# Starting game
-# Get random player
-# First turn is random player
-# Player places his mark
-# Board is shown
-# Check if there is a winner
-# Other player places his mark
-#
+if __name__ == '__main__':
+    game = LogicHandler()
+    game.who_starts()
+
+    root = Tk()
+    root.geometry("640x500")
+    app = App(root, game)
+
+    root.mainloop()
+    root.destroy()
