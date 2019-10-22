@@ -1,5 +1,7 @@
 import random
+import os
 from tkinter import *
+from tkinter import messagebox
 
 
 class App:
@@ -22,7 +24,7 @@ class App:
         self.button2_2 = Button(frame, width=20, height=5, text=" ", command=lambda: self.modify_button(self.button2_2))
 
         self.label = Label(master, text="Welcome to Tic-Tac-Toe")
-        self.button_reset = Button(master, text="Reset")
+        self.button_reset = Button(master, text="Reset", command=lambda: os.execl(sys.executable, sys.executable, *sys.argv))
         self.button_quit = Button(master, text="Quit", command=frame.quit)
 
         self.button0_0.grid(row=0, column=0, sticky=NW, pady=2)
@@ -48,8 +50,7 @@ class App:
             game.set_token(int(info['row']), int(info['column']), self.game.current_player)
             winner = game.check_winner()
             game.show_winner(self.label, winner)
-            if len(winner) != 0:
-                self.winner_status = True
+            self.reset(winner)
 
             if self.winner_status is False:
                 if self.game.current_player == self.game.player1:
@@ -60,6 +61,29 @@ class App:
                     self.label.config(text="It's now {}'s turn.".format(self.game.player1))
         else:
             self.label.config(text="Case already used !")
+
+    def reset(self, winner):
+        if len(winner) != 0:
+            self.winner_status = True
+            answer = messagebox.askyesno("Question", "Player {} won ! Do you want to play again ?".format(winner))
+            if answer is True:
+                game.wipe_board()
+                game.who_starts()
+                self.winner_status = False
+                self.button0_0.config(text=" ")
+                self.button0_1.config(text=" ")
+                self.button0_2.config(text=" ")
+
+                self.button1_0.config(text=" ")
+                self.button1_1.config(text=" ")
+                self.button1_2.config(text=" ")
+
+                self.button2_0.config(text=" ")
+                self.button2_1.config(text=" ")
+                self.button2_2.config(text=" ")
+
+            else:
+                root.destroy()
 
 
 class Board:
