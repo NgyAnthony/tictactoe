@@ -20,7 +20,7 @@ Supinfo first project for 1PROG.
 
 QA has been performed only on MacOS as of 22/10. Windows 10 QC is en route.
 Common cases verified.
-Further QC can be performed until submition date (08/11).
+Further QC can be performed until submission date (08/11).
 
 QC Status :
 
