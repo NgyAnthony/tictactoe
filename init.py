@@ -17,6 +17,8 @@ class App:
         """
         self.game = game
         self.winner_status = False
+        self.play_nb = 0
+
         # <---Frame creation.--->
         frame = Frame(master=master, width=640, height=400)
         frame.pack()
@@ -79,9 +81,12 @@ class App:
                 if self.game.current_player == self.game.player1:
                     self.game.current_player = self.game.player2
                     self.label.config(text="It's now {}'s turn.".format(self.game.player2))
+                    self.play_nb += 1
                 elif self.game.current_player == self.game.player2:
                     self.game.current_player = self.game.player1
                     self.label.config(text="It's now {}'s turn.".format(self.game.player1))
+                    self.play_nb += 1
+
         # Indicate illegal move.
         else:
             self.label.config(text="Case already used !")
@@ -91,13 +96,16 @@ class App:
         Winner parameter is a list, if it's not empty, it means there is a winner. When the condition is satisfied,
         automatic prompt is triggered to ask if the player wants to play again.
         """
-        if len(winner) != 0:
+        if len(winner) != 0 or (self.play_nb == 8 and len(winner) == 0):
             self.winner_status = True
-            answer = messagebox.askyesno("Question", "Player {} won ! Do you want to play again ?".format(winner))
+            if self.play_nb == 8 and len(winner) == 0:
+                winner = "Nobody"
+            answer = messagebox.askyesno("Question", "{} won ! Do you want to play again ?".format(winner))
             if answer is True:
                 game.wipe_board()
-                game.who_starts()
+                game.who_starts(self.label)
                 self.winner_status = False
+                self.play_nb = -1
                 self.button0_0.config(text=" ")
                 self.button0_1.config(text=" ")
                 self.button0_2.config(text=" ")
@@ -142,8 +150,9 @@ class LogicHandler(Board):
         self.player1 = "x"
         self.player2 = "o"
 
-    def who_starts(self):
+    def who_starts(self, label):
         self.current_player = random.choice(["x", "o"])
+        label.config(text="It's now {}'s turn.".format(self.current_player))
 
     def check_horizontal(self):
         "For each row, check if the player set three plays in this row."
@@ -184,11 +193,11 @@ class LogicHandler(Board):
 
 if __name__ == '__main__':
     game = LogicHandler()
-    game.who_starts()
 
     root = Tk()
     root.geometry("640x500")
     app = App(root, game)
+    game.who_starts(app.label)
 
     root.mainloop()
     root.destroy()
