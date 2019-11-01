@@ -73,10 +73,11 @@ class App:
             info = button.grid_info()  # Get row and column info
             # Use Board method to replicate action in logic with the help of info
             game.set_token(int(info['row']), int(info['column']), self.game.current_player)
-            winner = game.check_winner()  # Look for a winner
+
+            """winner = game.check_winner()  # Look for a winner
             game.show_winner(self.label, winner)  # Show winner if there is one
             self.reset(winner)  # Prompt user to play again if check_winner returns a value.
-
+"""
             # Change turn of player if there is no winner.
             if self.winner_status is False:
                 if self.game.current_player == self.game.player1:
@@ -155,7 +156,7 @@ class LogicHandler(Board):
         self.current_player = random.choice(["x", "o"])
         label.config(text="It's now {}'s turn.".format(self.current_player))
 
-    def check_horizontal(self):
+    def child_check_horizontal(self):
         "For each row, check if the player set three plays in this row."
         for row in range(len(self.matrix)):
             if len(set(self.matrix[row])) == 1 and None not in self.matrix[row]:
@@ -163,7 +164,7 @@ class LogicHandler(Board):
                 temp_winner = self.matrix[row][1]
                 return temp_winner
 
-    def check_vertical(self):
+    def child_check_vertical(self):
         "Row is static, if each vertically aligned moves are valid, winner is returned."
         for col in range(3):
             if self.matrix[0][col] == self.matrix[1][col] == self.matrix[2][col]:
@@ -171,7 +172,7 @@ class LogicHandler(Board):
                 if temp_winner is not None:
                     return temp_winner
 
-    def check_cross(self):
+    def child_check_cross(self):
         "Check for the two use cases"
         if (self.matrix[0][0] == self.matrix[1][1] == self.matrix[2][2]) or \
                 (self.matrix[0][2] == self.matrix[1][1] == self.matrix[2][0]):
@@ -180,9 +181,9 @@ class LogicHandler(Board):
 
     def check_winner(self):
         "Call all methods and return results of each call in a list."
-        v = self.check_vertical()
-        h = self.check_horizontal()
-        c = self.check_cross()
+        v = self.child_check_vertical()
+        h = self.child_check_horizontal()
+        c = self.child_check_cross()
         winner = list(filter(None, [v, h, c]))
         return winner
 
