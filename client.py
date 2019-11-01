@@ -1,6 +1,7 @@
 import os
 from tkinter import *  # Module used for GUI.
 from tkinter import messagebox  # Module used for the 'Play Again' prompt.
+from logic_handler import LogicHandler
 
 
 class Client:
@@ -12,14 +13,14 @@ class Client:
         frame.pack()
 
         self.button0_0 = Button(frame, width=20, height=5, text=" ", command=lambda: self.button_clicked(self.button0_0))
-        self.button0_1 = Button(frame, width=20, height=5, text=" ", command=lambda: self.button_clickedn(self.button0_1))
-        self.button0_2 = Button(frame, width=20, height=5, text=" ", command=lambda: self.button_clickedn(self.button0_2))
-        self.button1_0 = Button(frame, width=20, height=5, text=" ", command=lambda: self.button_clickedn(self.button1_0))
-        self.button1_1 = Button(frame, width=20, height=5, text=" ", command=lambda: self.button_clickedn(self.button1_1))
-        self.button1_2 = Button(frame, width=20, height=5, text=" ", command=lambda: self.button_clickedn(self.button1_2))
-        self.button2_0 = Button(frame, width=20, height=5, text=" ", command=lambda: self.button_clickedn(self.button2_0))
-        self.button2_1 = Button(frame, width=20, height=5, text=" ", command=lambda: self.button_clickedn(self.button2_1))
-        self.button2_2 = Button(frame, width=20, height=5, text=" ", command=lambda: self.button_clickedn(self.button2_2))
+        self.button0_1 = Button(frame, width=20, height=5, text=" ", command=lambda: self.button_clicked(self.button0_1))
+        self.button0_2 = Button(frame, width=20, height=5, text=" ", command=lambda: self.button_clicked(self.button0_2))
+        self.button1_0 = Button(frame, width=20, height=5, text=" ", command=lambda: self.button_clicked(self.button1_0))
+        self.button1_1 = Button(frame, width=20, height=5, text=" ", command=lambda: self.button_clicked(self.button1_1))
+        self.button1_2 = Button(frame, width=20, height=5, text=" ", command=lambda: self.button_clicked(self.button1_2))
+        self.button2_0 = Button(frame, width=20, height=5, text=" ", command=lambda: self.button_clicked(self.button2_0))
+        self.button2_1 = Button(frame, width=20, height=5, text=" ", command=lambda: self.button_clicked(self.button2_1))
+        self.button2_2 = Button(frame, width=20, height=5, text=" ", command=lambda: self.button_clicked(self.button2_2))
 
         self.label = Label(master, text="Welcome to Tic-Tac-Toe")
         self.button_reset = Button(master, text="Reset", command=lambda: os.execl(sys.executable, sys.executable, *sys.argv))
@@ -47,27 +48,34 @@ class Client:
 
     def button_clicked(self, button):
         self.modify_button(button)
-        self.show_winner()
+        winner = self.show_winner()
+        self.reset(winner)
 
     def modify_button(self, button):
-        next_player = self.logic_instance.handle_interaction(button)
-        self.label.config(text="It's now {}'s turn.".format(next_player))
+        legalstate, next_player = self.logic_instance.handle_interaction(button)
+        if legalstate == "Legal" :
+            self.label.config(text="It's now {}'s turn.".format(next_player))
+        elif legalstate == "Illegal":
+            self.label.config(text="Your move is illgeal, it's still {}'s turn.".format(next_player))
 
     def show_winner(self):
         "Label is modified to make the winner appear on GUI."
         winner = self.logic_instance.check_winner()
         if winner is not None and winner != "Illegal":
             self.label.config(text='"{}" won !'.format(winner))
-        else:
+        elif winner == "Illegal":
             self.label.config(text='"{}" won !'.format("Case already used!"))
+        return winner
 
-    def reset(self):
-        pass
-        #send signal to server to nuke logic_handler and initiate another instance
+    def reset(self, winner):
+        if logic_instance.winner_status is True:
+            answer = messagebox.askyesno("Question", "{} won ! Do you want to play again ?".format(winner))
+            if answer is True:
+                os.execl(sys.executable, sys.executable, *sys.argv)
 
 
 if __name__ == '__main__':
-    logic_instance = "received from server"
+    logic_instance = LogicHandler()
 
     root = Tk()
     root.geometry("640x500")

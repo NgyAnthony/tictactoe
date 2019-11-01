@@ -28,15 +28,15 @@ class LogicHandler(Board):
                 if self.current_player == self.player1:
                     self.current_player = self.player2
                     self.play_nb += 1
-                    return self.player2
+                    return "Legal", self.player2
                 elif self.current_player == self.player2:
                     self.current_player = self.player1
                     self.play_nb += 1
-                    return self.player1
+                    return "Legal", self.player1
 
         # Indicate illegal move.
         else:
-            return "Illegal"
+            return "Illegal", self.current_player
 
     def child_check_horizontal(self):
         "For each row, check if the player set three plays in this row."
