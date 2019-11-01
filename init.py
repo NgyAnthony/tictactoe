@@ -9,7 +9,7 @@ class App:
     App contains the GUI, the game events,
     and handles all the interaction with the Board class and LogicHandler subclass.
     """
-    def __init__(self, master, game):
+    def __init__(self, game):
         """
         :param master: is an instance of Tk(), which is the main window for Tkinter.
         :param game: is an instance of LogicHandler. Purpose: enable interaction between Tk objects and LogicHandler
@@ -19,6 +19,7 @@ class App:
         self.winner_status = False
         self.play_nb = 0
 
+    def create_ui(self, master):
         # <---Frame creation.--->
         frame = Frame(master=master, width=640, height=400)
         frame.pack()
@@ -196,7 +197,8 @@ if __name__ == '__main__':
 
     root = Tk()
     root.geometry("640x500")
-    app = App(root, game)
+    app = App(game)
+    app.create_ui(root)
     game.who_starts(app.label)
 
     root.mainloop()
