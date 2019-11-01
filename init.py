@@ -9,7 +9,7 @@ class App:
     App contains the GUI, the game events,
     and handles all the interaction with the Board class and LogicHandler subclass.
     """
-    def __init__(self, master, game):
+    def __init__(self, game):
         """
         :param master: is an instance of Tk(), which is the main window for Tkinter.
         :param game: is an instance of LogicHandler. Purpose: enable interaction between Tk objects and LogicHandler
@@ -17,6 +17,9 @@ class App:
         """
         self.game = game
         self.winner_status = False
+        self.play_nb = 0
+
+    def create_ui(self, master):
         # <---Frame creation.--->
         frame = Frame(master=master, width=640, height=400)
         frame.pack()
@@ -70,18 +73,22 @@ class App:
             info = button.grid_info()  # Get row and column info
             # Use Board method to replicate action in logic with the help of info
             game.set_token(int(info['row']), int(info['column']), self.game.current_player)
-            winner = game.check_winner()  # Look for a winner
+
+            """winner = game.check_winner()  # Look for a winner
             game.show_winner(self.label, winner)  # Show winner if there is one
             self.reset(winner)  # Prompt user to play again if check_winner returns a value.
-
+"""
             # Change turn of player if there is no winner.
             if self.winner_status is False:
                 if self.game.current_player == self.game.player1:
                     self.game.current_player = self.game.player2
                     self.label.config(text="It's now {}'s turn.".format(self.game.player2))
+                    self.play_nb += 1
                 elif self.game.current_player == self.game.player2:
                     self.game.current_player = self.game.player1
                     self.label.config(text="It's now {}'s turn.".format(self.game.player1))
+                    self.play_nb += 1
+
         # Indicate illegal move.
         else:
             self.label.config(text="Case already used !")
@@ -91,13 +98,16 @@ class App:
         Winner parameter is a list, if it's not empty, it means there is a winner. When the condition is satisfied,
         automatic prompt is triggered to ask if the player wants to play again.
         """
-        if len(winner) != 0:
+        if len(winner) != 0 or (self.play_nb == 8 and len(winner) == 0):
             self.winner_status = True
-            answer = messagebox.askyesno("Question", "Player {} won ! Do you want to play again ?".format(winner))
+            if self.play_nb == 8 and len(winner) == 0:
+                winner = "Nobody"
+            answer = messagebox.askyesno("Question", "{} won ! Do you want to play again ?".format(winner))
             if answer is True:
                 game.wipe_board()
-                game.who_starts()
+                game.who_starts(self.label)
                 self.winner_status = False
+                self.play_nb = -1
                 self.button0_0.config(text=" ")
                 self.button0_1.config(text=" ")
                 self.button0_2.config(text=" ")
@@ -142,10 +152,11 @@ class LogicHandler(Board):
         self.player1 = "x"
         self.player2 = "o"
 
-    def who_starts(self):
+    def who_starts(self, label):
         self.current_player = random.choice(["x", "o"])
+        label.config(text="It's now {}'s turn.".format(self.current_player))
 
-    def check_horizontal(self):
+    def child_check_horizontal(self):
         "For each row, check if the player set three plays in this row."
         for row in range(len(self.matrix)):
             if len(set(self.matrix[row])) == 1 and None not in self.matrix[row]:
@@ -153,7 +164,7 @@ class LogicHandler(Board):
                 temp_winner = self.matrix[row][1]
                 return temp_winner
 
-    def check_vertical(self):
+    def child_check_vertical(self):
         "Row is static, if each vertically aligned moves are valid, winner is returned."
         for col in range(3):
             if self.matrix[0][col] == self.matrix[1][col] == self.matrix[2][col]:
@@ -161,7 +172,7 @@ class LogicHandler(Board):
                 if temp_winner is not None:
                     return temp_winner
 
-    def check_cross(self):
+    def child_check_cross(self):
         "Check for the two use cases"
         if (self.matrix[0][0] == self.matrix[1][1] == self.matrix[2][2]) or \
                 (self.matrix[0][2] == self.matrix[1][1] == self.matrix[2][0]):
@@ -170,9 +181,9 @@ class LogicHandler(Board):
 
     def check_winner(self):
         "Call all methods and return results of each call in a list."
-        v = self.check_vertical()
-        h = self.check_horizontal()
-        c = self.check_cross()
+        v = self.child_check_vertical()
+        h = self.child_check_horizontal()
+        c = self.child_check_cross()
         winner = list(filter(None, [v, h, c]))
         return winner
 
@@ -184,11 +195,12 @@ class LogicHandler(Board):
 
 if __name__ == '__main__':
     game = LogicHandler()
-    game.who_starts()
 
     root = Tk()
     root.geometry("640x500")
-    app = App(root, game)
+    app = App(game)
+    app.create_ui(root)
+    game.who_starts(app.label)
 
     root.mainloop()
     root.destroy()
