@@ -70,10 +70,13 @@ class LogicHandler(Board):
         winner = None
         if "x" in winner_list:
             winner = "x"
+            self.winner_status = True
         elif "o" in winner_list:
             winner = "o"
+            self.winner_status = True
         elif "x" in winner_list and "o" in winner_list:
             print("An error has been found.")
         elif winner is None and self.play_nb == 9:
             winner = "Nobody"
+            self.winner_status = True
         return winner
