@@ -45,6 +45,11 @@ class Client:
         firstplayer = self.logic_instance.who_starts()
         self.label.config(text="Player {} will start.".format(firstplayer))
 
+    def start_game(self, master):
+        self.create_ui(master)
+        self.show_ui()
+        self.show_first_player()
+
     def button_clicked(self, button):
         self.modify_button(button)
         winner = self.show_winner()
@@ -82,9 +87,7 @@ if __name__ == '__main__':
     root.geometry("640x500")
 
     client = Client(logic_instance)
-    client.create_ui(root)
-    client.show_ui()
-    client.show_first_player()
+    client.start_game(root)
 
     root.mainloop()
     root.destroy()
