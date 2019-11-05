@@ -4,26 +4,35 @@ import random
 
 class LogicHandler(Board):
     """
-    LogicHandler inherits the Board to be able to easily interact with it.
+    LogicHandler est le controlleur et hérite du modèle "Board".
+    Les méthodes du controlleur assurent l'interaction entre le client et le modèle.
+    Par exemple, la vérification d'une égalité ou d'un vainqueur ou le placement d'un coup.
     """
     def __init__(self):
-        super().__init__()
+        super().__init__()  # Hérite de Board
         self.current_player = None
         self.winner_status = False
         self.player1 = "x"
         self.player2 = "o"
-        self.play_nb = 0
+        self.play_nb = 0  # Vérifie le nombre de coups effectués.
 
     def who_starts(self):
+        """Méthode qui définit quel joueur commence."""
         self.current_player = random.choice(["x", "o"])
         return self.current_player
 
     def handle_interaction(self, button):
+        """Lorsque cette méthode est appellée, un bouton tkinter est passé en argument.
+        Après verification de la légalité du coup (bouton occupé ou non), la méthode place le joueur
+        actuel dans le modèle (matrice Board) puis ensuite l'affiche dans la vue (UI Tkinter). """
         if button['text'] == " ":
             button.config(text=self.current_player)
+            # Récupère la position du bouton
             info = button.grid_info()
+            # Traduit la position du bouton pour pouvoir répliquer le coup sur le modèle
             self.set_token(int(info['row']), int(info['column']), self.current_player)
 
+            # Si il n'y a pas de vainqueur, placer le coup.
             if self.winner_status is False:
                 if self.current_player == self.player1:
                     self.current_player = self.player2
@@ -34,12 +43,12 @@ class LogicHandler(Board):
                     self.play_nb += 1
                     return "Legal", self.player1
 
-        # Indicate illegal move.
+        # Indication d'un coup illegal.
         else:
             return "Illegal", self.current_player
 
     def child_check_horizontal(self):
-        "For each row, check if the player set three plays in this row."
+        "Pour chaque ligne, vérifier si un joueur à joué trois fois dans cette ligne."
         for row in range(len(self.matrix)):
             if len(set(self.matrix[row])) == 1 and None not in self.matrix[row]:
                 # Set removes duplicates, if the remainer is one it means entire row is occupied.
@@ -47,7 +56,8 @@ class LogicHandler(Board):
                 return temp_winner
 
     def child_check_vertical(self):
-        "Row is static, if each vertically aligned moves are valid, winner is returned."
+        "Pour chaque colonne, vérifier si un joueur à joué trois fois dans cette colonne."
+        # On garde l'index pour les lignes fixe puisque la vérification se fait verticalement.
         for col in range(3):
             if self.matrix[0][col] == self.matrix[1][col] == self.matrix[2][col]:
                 temp_winner = self.matrix[0][col]
@@ -55,14 +65,14 @@ class LogicHandler(Board):
                     return temp_winner
 
     def child_check_cross(self):
-        "Check for the two use cases (diagonal left and right)"
+        "Vérification brute des deux cas : diagonale gauche et droite."
         if (self.matrix[0][0] == self.matrix[1][1] == self.matrix[2][2]) or \
                 (self.matrix[0][2] == self.matrix[1][1] == self.matrix[2][0]):
             temp_winner = self.matrix[1][1]
             return temp_winner
 
     def check_winner(self):
-        "Call all methods and return the winner if there is one"
+        "Appel de toutes les méthodes de vérification et retourner soit un vainqueur, soit une égalité, soit rien."
         v = self.child_check_vertical()
         h = self.child_check_horizontal()
         c = self.child_check_cross()
