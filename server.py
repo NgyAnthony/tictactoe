@@ -66,10 +66,9 @@ class Server:
                     elif player == 0:
                         reply = self.players[0]
 
-                    print("Mise à jour du board...")
+                    #print("Mise à jour du board...")
                     #print("- Reçu: ", data.matrix)
                     #print("- Envoyé: ", reply.matrix)
-                    print(reply.matrix)
                     conn.sendall(pickle.dumps(reply))
 
                 else:
@@ -111,7 +110,7 @@ class Server:
         self.player_number = 0
         while True:
             conn, addr = self.s.accept()
-            print("Connected to:", addr)
+            print("Connecté à:", addr)
 
             start_new_thread(self.threaded_client, (conn, self.player_number))
             self.player_number += 1

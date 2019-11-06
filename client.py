@@ -122,8 +122,6 @@ class Client:
         self.label.config(text="You are {}.".format(self.logic_instance.player_id))
         self.label2.config(text="It's now {}'s turn.".format(self.logic_instance.current_player))
 
-        print(self.logic_instance.matrix)
-
     def ui_check(self):
         """Fait apparaître les coups dans les boutons tkinter."""
         temp = -1
