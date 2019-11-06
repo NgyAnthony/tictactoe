@@ -1,34 +1,14 @@
-# tictactoe
-
-Supinfo first project for 1PROG. 
-
+Supinfo - Projet 1PROG - tictactoe
 ------------
 
+***Instructions pour le correcteur :***
 
-- Run init.py to start game.
-- Project requirements are declared DONE and COMPLIANT as of Tuesday 22 October.
+*Deux* versions du jeu sont disponibles :
+ - Jeu **en local** 1v1 :
+    > - Exécuter le fichier client.py
 
-- Project version to be sent is on the "submitted" branch. Every modification on "master" must be for testing purposes ONLY.
-
-- Further developpement of this project is deemed unnecessary as requirements for this project have all been completed, and even exceeded.
-
-- Requirements can be found on "Canvas", to sum up, a version of "Tic Tac Toe with 2 players with no GUI is asked."
-
-
-------------
-
-
-QA has been performed only on MacOS as of 22/10. Windows 10 QC is en route.
-Common cases verified.
-Further QC can be performed until submission date (08/11).
-
-QC Status :
-
-- Horizontal PASS
-- Vertical PASS
-- Diagonal PASS
-- Reset PASS
-- Play again PASS
-- Play again + Reset PASS
-- Quit PASS
-- Case occupied PASS
+ - Jeu **en ligne** 1v1:
+    - Serveur local : `self.server = "127.0.0.1"`/server.py, ligne 10
+    >  - Exécuter server.py
+	  >  - Exécuter client.py
+	  >  - Exécuter un autre client.py
