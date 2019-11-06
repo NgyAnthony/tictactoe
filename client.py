@@ -1,7 +1,6 @@
-import os
 from tkinter import *  # Module utilisé pour l'interface graphique.
 from tkinter import messagebox  # Module utilisé pour le prompt 'voulez-vous rejouer' ?
-from logic_handler import LogicHandler
+from network import Network
 
 
 class Client:
@@ -11,17 +10,18 @@ class Client:
     Les méthodes de Client ont pour objectif d'appeler les méthodes du Controlleur en passant les arguments
     nécéssaires et de retourner la décision du controlleur pour pouvoir ensuite présenter le résultat sur Tkinter.
     """
-    def __init__(self, logic_instance):
+    def __init__(self, logic_instance, master):
         self.logic_instance = logic_instance  # Instance du controlleur
+        self.master = master
 
-    def create_ui(self, master):
+    def create_ui(self):
         """"Tkinter créé un 'master' ou 'root' qui est la fenêtre brute. Ensuite, une fenêtre délimité est rajoutée à
         la fenêtre brute.
 
         On peut ensuite créer des 'widgets' à l'intérieur de cette fenêtre délimitée. Chaque widget doit être créé puis
         ensuite présenté avec pack(), qui est automatique, ou grid().
         """
-        self.frame = Frame(master=master, width=640, height=400)
+        self.frame = Frame(master=self.master, width=640, height=400)
         self.frame.pack()
 
         self.button0_0 = Button(self.frame, width=20, height=5, text=" ", command=lambda: self.button_clicked(self.button0_0))
@@ -34,9 +34,20 @@ class Client:
         self.button2_1 = Button(self.frame, width=20, height=5, text=" ", command=lambda: self.button_clicked(self.button2_1))
         self.button2_2 = Button(self.frame, width=20, height=5, text=" ", command=lambda: self.button_clicked(self.button2_2))
 
-        self.label = Label(master, text="Welcome to Tic-Tac-Toe")
-        self.button_reset = Button(master, text="Reset", command=lambda: os.execl(sys.executable, sys.executable, *sys.argv))
-        self.button_quit = Button(master, text="Quit", command=self.frame.quit)
+        self.button_list = [self.button0_0,
+                            self.button0_1,
+                            self.button0_2,
+                            self.button1_0,
+                            self.button1_1,
+                            self.button1_2,
+                            self.button2_0,
+                            self.button2_1,
+                            self.button2_2]
+
+        self.label = Label(self.master, text="Text1")
+        self.label2 = Label(self.master, text="Text2")
+        self.button_reset = Button(self.master, text="Reset", command=self.reset_by_button)
+        self.button_quit = Button(self.master, text="Quit", command=self.frame.quit)
 
     def show_ui(self):
         self.button0_0.grid(row=0, column=0, sticky=NW, pady=2)
@@ -50,6 +61,7 @@ class Client:
         self.button2_2.grid(row=2, column=2, sticky=SE, pady=2)
 
         self.label.pack()
+        self.label2.pack()
         self.button_reset.pack()
         self.button_quit.pack()
 
@@ -58,26 +70,24 @@ class Client:
         firstplayer = self.logic_instance.who_starts()
         self.label.config(text="Player {} will start.".format(firstplayer))
 
-    def start_game(self, master):
+    def start_game(self):
         "Démarrage du jeu, créer l'UI, la présenter, puis déterminer qui commence."
-        self.create_ui(master)
+        self.create_ui()
         self.show_ui()
         self.show_first_player()
+        self.poll()
 
     def button_clicked(self, button):
         """Appelé lors d'une interaction avec un bouton. Permet d'appeler d'autres méthodes qui déterminent si le coup
          est possible ou si le jeu est terminé."""
         self.modify_button(button)
+        self.send_move()
         winner = self.show_winner()
         self.reset(winner)
 
     def modify_button(self, button):
-        "Cette méthode récupère le statut du coup effectué (légal ou illégal) et informe qui est le prochain joueur."
-        legalstate, next_player = self.logic_instance.handle_interaction(button)
-        if legalstate == "Legal":
-            self.label.config(text="It's now {}'s turn.".format(next_player))
-        elif legalstate == "Illegal":
-            self.label.config(text="Your move is illgeal, it's still {}'s turn.".format(next_player))
+        "Cette méthode envoie le coup placé au controlleur."
+        self.logic_instance.handle_interaction(button)
 
     def show_winner(self):
         """Lorsque le controlleur retourne une value None, c'est qu'il n'y a pas de vainqueur. Dans le cas contraire,
@@ -87,25 +97,56 @@ class Client:
             self.label.config(text='"{}" won !'.format(winner))
         return winner
 
+    def reset_by_button(self):
+        network_instance.reset_board()
+
     def reset(self, winner):
         """Cette méthode créée une fenêtre qui montre qui a gagné en utilisant la valeur retournée de show_winner()
         puis demande si le joueur veut rejouer."""
-        if logic_instance.winner_status is True:
+        if self.logic_instance.winner_status is True:
             answer = messagebox.askyesno("Question", "{} won ! Do you want to play again ?".format(winner))
             if answer is True:
-                os.execl(sys.executable, sys.executable, *sys.argv)
+                network_instance.reset_board()
             elif answer is False:
                 self.frame.quit()
 
+    def send_move(self):
+        """Envoie le controlleur de ce client au serveur."""
+        network_instance.send(self.logic_instance)
+
+    def poll(self):
+        """Récupère le controlleur mis à jour par le serveur et met à jour l'UI."""
+        self.logic_instance = network_instance.ask_board()
+        self.master.after(100, self.poll)
+        self.ui_check()
+        self.label.config(text="You are {}.".format(self.logic_instance.player_id))
+        self.label2.config(text="It's now {}'s turn.".format(self.logic_instance.current_player))
+
+        print(self.logic_instance.matrix)
+
+    def ui_check(self):
+        """Fait apparaître les coups dans les boutons tkinter."""
+        temp = -1
+        for row in self.logic_instance.matrix:
+            for col in row:
+                temp += 1
+
+                if col is None and self.button_list[temp]['text'] != " ":
+                    self.button_list[temp].config(text=" ")
+
+                elif col != self.button_list[temp]['text']:
+                    self.button_list[temp].config(text=col)
+
 
 if __name__ == '__main__':
-    logic_instance = LogicHandler()  # Instance du controlleur
+    network_instance = Network()  # Instance de network qui interagit avec le serveur
+    logic_instance = network_instance.getP()  # Instance du controlleur
 
     root = Tk()  # Fenêtre 'brute'
     root.geometry("640x500")
 
-    client = Client(logic_instance)  # Création d'une instance client
-    client.start_game(root)  # Appel de la fonction initiale.
+    client = Client(logic_instance, root)  # Création d'une instance client
+    client.start_game()  # Appel de la fonction initiale.
 
     root.mainloop()
     root.destroy()

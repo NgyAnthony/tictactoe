@@ -1,5 +1,4 @@
 from board import Board
-import random
 
 
 class LogicHandler(Board):
@@ -8,40 +7,38 @@ class LogicHandler(Board):
     Les méthodes du controlleur assurent l'interaction entre le client et le modèle.
     Par exemple, la vérification d'une égalité ou d'un vainqueur ou le placement d'un coup.
     """
-    def __init__(self):
+    def __init__(self, player_id):
         super().__init__()  # Hérite de Board
         self.current_player = None
         self.winner_status = False
-        self.player1 = "x"
-        self.player2 = "o"
+        self.player_id = player_id
         self.play_nb = 0  # Vérifie le nombre de coups effectués.
 
     def who_starts(self):
         """Méthode qui définit quel joueur commence."""
-        self.current_player = random.choice(["x", "o"])
         return self.current_player
 
     def handle_interaction(self, button):
         """Lorsque cette méthode est appellée, un bouton tkinter est passé en argument.
         Après verification de la légalité du coup (bouton occupé ou non), la méthode place le joueur
         actuel dans le modèle (matrice Board) puis ensuite l'affiche dans la vue (UI Tkinter). """
-        if button['text'] == " ":
+        if button['text'] == " " and self.current_player == self.player_id:
             button.config(text=self.current_player)
             # Récupère la position du bouton
             info = button.grid_info()
             # Traduit la position du bouton pour pouvoir répliquer le coup sur le modèle
             self.set_token(int(info['row']), int(info['column']), self.current_player)
 
-            # Si il n'y a pas de vainqueur, placer le coup.
+            # Si il n'y a pas de vainqueur, changer de tour.
             if self.winner_status is False:
-                if self.current_player == self.player1:
-                    self.current_player = self.player2
+                if self.current_player == "x":
+                    self.current_player = "o"
                     self.play_nb += 1
-                    return "Legal", self.player2
-                elif self.current_player == self.player2:
-                    self.current_player = self.player1
+                    return "Legal", "o"
+                elif self.current_player == "o":
+                    self.current_player = "x"
                     self.play_nb += 1
-                    return "Legal", self.player1
+                return "Legal", "x"
 
         # Indication d'un coup illegal.
         else:
